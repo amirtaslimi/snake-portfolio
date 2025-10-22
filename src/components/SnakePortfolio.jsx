@@ -39,33 +39,24 @@ export default function SnakePortfolio() {
   const SAMPLE = [
     {
       id: 1,
-      title: "Cataract Phase Recognition",
-      short: "Lightweight domain-adaptive model.",
-      url: "#",
+      title: "COVID-19 Detection Using CNN",
+      short:
+        "Implementation of the paper “An Efficient CNN Model for COVID-19 Disease Detection Based on X-Ray Image Classification.”",
+      url: "https://github.com/amirtaslimi/COVID19-Detection-CNN",
     },
     {
       id: 2,
-      title: "VLM Food App",
-      short: "Small VLM that suggests recipes.",
-      url: "#",
+      title: "Steel Defect Detection and Segmentation",
+      short:
+        "Industrial defect detection and segmentation on steel sheets using deep learning",
+      url: "https://github.com/amirtaslimi/severstal-steel-defect-detection",
     },
     {
       id: 3,
-      title: "Snake Portfolio",
-      short: "This interactive portfolio demo.",
-      url: "#",
-    },
-    {
-      id: 4,
-      title: "Video Segmentation",
-      short: "Temporal segmentation ideas.",
-      url: "#",
-    },
-    {
-      id: 5,
-      title: "MLOps Notes",
-      short: "Deployment pipelines & tips.",
-      url: "#",
+      title: "AI Conversation Language Coach",
+      short:
+        "An AI-powered web app that listens to two-person English conversations, gives personalized coaching feedback using large language models.",
+      url: "https://github.com/amirtaslimi/ai-speaking-feedback",
     },
   ];
 
