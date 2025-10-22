@@ -34,6 +34,7 @@ export default function SnakePortfolio() {
   const [projects, setProjects] = useState(null); // loaded from /projects.json or fallback
   const [modal, setModal] = useState(null); // {project, x, y}
   const [gameOver, setGameOver] = useState(false);
+  const [projectNodes, setProjectNodes] = useState([]);
 
   // fallback sample projects
   const SAMPLE = [
@@ -70,7 +71,7 @@ export default function SnakePortfolio() {
 
   useEffect(() => {
     // try to fetch projects.json
-    fetch("public/projects.json")
+    fetch("/projects.json")
       .then((r) => (r.ok ? r.json() : Promise.reject("no file")))
       .then((data) => {
         if (Array.isArray(data) && data.length) setProjects(data);
@@ -107,6 +108,7 @@ export default function SnakePortfolio() {
       nodes.push({ x, y, project: list[i] });
     }
     projectNodesRef.current = nodes;
+    setProjectNodes(nodes);
 
     // --- Place red penalty squares (same count as projects, or you can tweak)
     const redCount = Math.max(6, Math.floor(list.length / 2)); // e.g., half as many
@@ -336,10 +338,7 @@ export default function SnakePortfolio() {
           <div className="bg-white/5 p-3 rounded-lg">
             <h3 className="font-medium">Projects on board</h3>
             <ul className="mt-2 text-sm space-y-2">
-              {(projectNodesRef.current.length
-                ? projectNodesRef.current
-                : []
-              ).map((n) => (
+              {projectNodes.map((n) => (
                 <li
                   key={`${n.x}-${n.y}`}
                   className="flex items-center justify-between"
