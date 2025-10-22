@@ -1,20 +1,20 @@
 [
   {
     "id": 1,
-    "title": "Lightweight Domain Adaptation",
-    "short": "My thesis work on cataract surgery phase recognition.",
-    "url": "https://github.com/yourusername/thesis"
+    "title": "COVID-19 Detection Using CNN",
+    "short": "Implementation of the paper “An Efficient CNN Model for COVID-19 Disease Detection Based on X-Ray Image Classification.”",
+    "url": "https://github.com/amirtaslimi/COVID19-Detection-CNN"
   },
   {
     "id": 2,
-    "title": "VLM Cooking Assistant",
-    "short": "Tiny vision-language model suggesting recipes.",
-    "url": "https://github.com/yourusername/food-vlm"
+    "title": "Steel Defect Detection and Segmentation",
+    "short": "Industrial defect detection and segmentation on steel sheets using deep learning",
+    "url": "https://github.com/amirtaslimi/severstal-steel-defect-detection"
   },
   {
     "id": 3,
-    "title": "Monte Carlo RL Project",
-    "short": "Reinforcement learning experiments in Frozen Lake.",
-    "url": "https://github.com/yourusername/mc-frozenlake"
+    "title": "AI Conversation Language Coach",
+    "short": "An AI-powered web app that listens to two-person English conversations, gives personalized coaching feedback using large language models.",
+    "url": "https://github.com/amirtaslimi/ai-speaking-feedback"
   }
 ]
