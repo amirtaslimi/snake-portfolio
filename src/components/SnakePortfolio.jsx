@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 export default function SnakePortfolio() {
   // -- Config
-  const CELL = 32;
+  const CELL = window.innerWidth < 500 ? 16 : 32; // smaller cells for small screens
   const BOARD_COLS = 20;
   const BOARD_ROWS = 14;
   const TICK_MS = 120;
@@ -229,11 +229,15 @@ export default function SnakePortfolio() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = BOARD_COLS * CELL * dpr;
-    canvas.height = BOARD_ROWS * CELL * dpr;
-    canvas.style.width = `${BOARD_COLS * CELL}px`;
-    canvas.style.height = `${BOARD_ROWS * CELL}px`;
-    ctx.scale(dpr, dpr);
+    // calculate scale based on container width
+    const containerWidth = Math.min(window.innerWidth - 42, BOARD_COLS * CELL); // leave some padding
+    const scale = containerWidth / (BOARD_COLS * CELL);
+
+    canvas.width = BOARD_COLS * CELL * scale * dpr;
+    canvas.height = BOARD_ROWS * CELL * scale * dpr;
+    canvas.style.width = `${BOARD_COLS * CELL * scale}px`;
+    canvas.style.height = `${BOARD_ROWS * CELL * scale}px`;
+    ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0); // scale drawing
 
     ctx.clearRect(0, 0, BOARD_COLS * CELL, BOARD_ROWS * CELL);
 
@@ -299,8 +303,8 @@ export default function SnakePortfolio() {
         </div>
       </header>
 
-      <div className="flex gap-6 relative">
-        <div className="bg-slate-900 p-3 rounded-lg shadow-lg">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="bg-slate-900 p-3 rounded-lg shadow-lg w-full">
           <canvas
             ref={canvasRef}
             className="block touch-none"
@@ -313,7 +317,7 @@ export default function SnakePortfolio() {
           </div>
         </div>
 
-        <aside className="w-80 md:w-96 lg:w-[420px]">
+        <aside className="w-full md:w-80 lg:w-[420px]">
           <div className="bg-white/5 p-3 rounded-lg">
             <h3 className="font-medium">Projects on board</h3>
             <ul className="mt-2 text-sm space-y-2">
