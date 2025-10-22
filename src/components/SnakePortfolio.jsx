@@ -1,38 +1,18 @@
-/*
-SnakePortfolio.jsx
-A single-file React component (default export) implementing a Snake game that "eats" project tiles.
-
-How to use
-1. Create a React app (Vite or CRA). Ensure Tailwind is configured (or remove Tailwind classes and use plain CSS).
-2. Place this file in src/components/SnakePortfolio.jsx and import it in your App.jsx.
-3. Optional: create a `public/projects.json` file containing an array of projects. If missing the component falls back to a sample list.
-4. Build and host to GitHub Pages (see short instructions below).
-
-GitHub Pages quick host
-- For a static build (create-react-app):
-  1. Add `homepage` in package.json: "homepage": "https://<your-username>.github.io/<repo-name>"
-  2. Install `gh-pages` and add deploy script: "predeploy": "npm run build", "deploy": "gh-pages -d build"
-  3. Run `npm run deploy`.
-- Or use `gh-pages` branch and push build artifacts to it or configure repository Settings -> Pages -> Branch: gh-pages/main.
-
-This component uses Tailwind utility classes. If you don't have Tailwind, either style manually or adapt the classes.
-*/
-
 import React, { useEffect, useRef, useState } from "react";
 
 export default function SnakePortfolio() {
   // -- Config
-  const CELL = 32; // pixels per cell
+  const CELL = 32;
   const BOARD_COLS = 20;
   const BOARD_ROWS = 14;
-  const TICK_MS = 120; // game tick in ms (speed)
+  const TICK_MS = 120;
 
-  // -- Refs and state
+  // -- Refs & state
   const canvasRef = useRef(null);
   const [running, setRunning] = useState(true);
   const [score, setScore] = useState(0);
-  const [projects, setProjects] = useState(null); // loaded from /projects.json or fallback
-  const [modal, setModal] = useState(null); // {project, x, y}
+  const [projects, setProjects] = useState(null);
+  const [modal, setModal] = useState(null);
   const [gameOver, setGameOver] = useState(false);
   const [projectNodes, setProjectNodes] = useState([]);
 
@@ -61,27 +41,26 @@ export default function SnakePortfolio() {
     },
   ];
 
-  // game state in refs to avoid constant re-renders
+  // -- Game state refs
   const snakeRef = useRef([{ x: 5, y: 7 }]);
   const dirRef = useRef({ x: 1, y: 0 });
-  const projectNodesRef = useRef([]); // {x,y,project}
-  const redNodesRef = useRef([]); // {x,y}
-  const lastTickRef = useRef(0);
+  const projectNodesRef = useRef([]);
+  const redNodesRef = useRef([]);
   const tickTimerRef = useRef(null);
 
+  // -- Swipe state
+  const touchStartRef = useRef({ x: 0, y: 0 });
+
   useEffect(() => {
-    // try to fetch projects.json
     fetch("/projects.json")
       .then((r) => (r.ok ? r.json() : Promise.reject("no file")))
-      .then((data) => {
-        if (Array.isArray(data) && data.length) setProjects(data);
-        else setProjects(SAMPLE);
-      })
+      .then((data) =>
+        setProjects(Array.isArray(data) && data.length ? data : SAMPLE)
+      )
       .catch(() => setProjects(SAMPLE));
   }, []);
 
   useEffect(() => {
-    // initialize board and place project nodes once projects loaded
     if (!projects) return;
     placeProjectsOnBoard(projects);
     startGameLoop();
@@ -90,14 +69,12 @@ export default function SnakePortfolio() {
       stopGameLoop();
       window.removeEventListener("keydown", handleKey);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects]);
 
   function placeProjectsOnBoard(list) {
     const nodes = [];
     const reserved = new Set(snakeRef.current.map((s) => `${s.x},${s.y}`));
 
-    // --- Place green squares (projects)
     for (let i = 0; i < list.length; i++) {
       let x, y;
       do {
@@ -110,8 +87,7 @@ export default function SnakePortfolio() {
     projectNodesRef.current = nodes;
     setProjectNodes(nodes);
 
-    // --- Place red penalty squares (same count as projects, or you can tweak)
-    const redCount = Math.max(6, Math.floor(list.length / 2)); // e.g., half as many
+    const redCount = Math.max(6, Math.floor(list.length / 2));
     const reds = [];
     for (let i = 0; i < redCount; i++) {
       let x, y;
@@ -129,6 +105,7 @@ export default function SnakePortfolio() {
     if (tickTimerRef.current) return;
     tickTimerRef.current = setInterval(() => tick(), TICK_MS);
   }
+
   function stopGameLoop() {
     if (tickTimerRef.current) clearInterval(tickTimerRef.current);
     tickTimerRef.current = null;
@@ -145,16 +122,15 @@ export default function SnakePortfolio() {
   function handleKey(e) {
     const k = e.key;
     const d = dirRef.current;
-    if (k === "ArrowUp" || k === "w")
-      if (d.y === 0) dirRef.current = { x: 0, y: -1 };
-    if (k === "ArrowDown" || k === "s")
-      if (d.y === 0) dirRef.current = { x: 0, y: 1 };
-    if (k === "ArrowLeft" || k === "a")
-      if (d.x === 0) dirRef.current = { x: -1, y: 0 };
-    if (k === "ArrowRight" || k === "d")
-      if (d.x === 0) dirRef.current = { x: 1, y: 0 };
+    if ((k === "ArrowUp" || k === "w") && d.y === 0)
+      dirRef.current = { x: 0, y: -1 };
+    if ((k === "ArrowDown" || k === "s") && d.y === 0)
+      dirRef.current = { x: 0, y: 1 };
+    if ((k === "ArrowLeft" || k === "a") && d.x === 0)
+      dirRef.current = { x: -1, y: 0 };
+    if ((k === "ArrowRight" || k === "d") && d.x === 0)
+      dirRef.current = { x: 1, y: 0 };
     if (k === " ") {
-      // pause
       setRunning((r) => {
         const next = !r;
         if (next) startGameLoop();
@@ -165,32 +141,48 @@ export default function SnakePortfolio() {
     if (k === "r") resetGame();
   }
 
+  // --- Touch handlers
+  function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  }
+
+  function handleTouchEnd(e) {
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    const d = dirRef.current;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0 && d.x === 0) dirRef.current = { x: 1, y: 0 };
+      else if (dx < 0 && d.x === 0) dirRef.current = { x: -1, y: 0 };
+    } else {
+      if (dy > 0 && d.y === 0) dirRef.current = { x: 0, y: 1 };
+      else if (dy < 0 && d.y === 0) dirRef.current = { x: 0, y: -1 };
+    }
+  }
+
   function tick() {
     const snake = snakeRef.current;
     const dir = dirRef.current;
     const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
 
-    // boundaries -> wrap-around
     if (head.x < 0) head.x = BOARD_COLS - 1;
     if (head.x >= BOARD_COLS) head.x = 0;
     if (head.y < 0) head.y = BOARD_ROWS - 1;
     if (head.y >= BOARD_ROWS) head.y = 0;
 
-    // check self-collision
     if (snake.some((s) => s.x === head.x && s.y === head.y)) {
       setGameOver(true);
       stopGameLoop();
       return;
     }
 
-    // move snake
     snake.unshift(head);
 
-    // check project nodes (eat)
     const nodes = projectNodesRef.current;
     const reds = redNodesRef.current;
 
-    // --- Check for green project eaten
     const eatenIndex = nodes.findIndex((n) => n.x === head.x && n.y === head.y);
     if (eatenIndex !== -1) {
       const node = nodes[eatenIndex];
@@ -204,7 +196,6 @@ export default function SnakePortfolio() {
         stopGameLoop();
       }
     } else {
-      // --- Check for red square hit
       const redIndex = reds.findIndex((r) => r.x === head.x && r.y === head.y);
       if (redIndex !== -1) {
         reds.splice(redIndex, 1);
@@ -216,7 +207,6 @@ export default function SnakePortfolio() {
           }
           return next;
         });
-        // respawn a new red square randomly
         let x, y;
         do {
           x = Math.floor(Math.random() * BOARD_COLS);
@@ -227,12 +217,10 @@ export default function SnakePortfolio() {
         );
         reds.push({ x, y });
       } else {
-        // normal move
         snake.pop();
       }
     }
 
-    // render
     renderBoard();
   }
 
@@ -240,7 +228,6 @@ export default function SnakePortfolio() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    // high DPI
     const dpr = window.devicePixelRatio || 1;
     canvas.width = BOARD_COLS * CELL * dpr;
     canvas.height = BOARD_ROWS * CELL * dpr;
@@ -248,14 +235,11 @@ export default function SnakePortfolio() {
     canvas.style.height = `${BOARD_ROWS * CELL}px`;
     ctx.scale(dpr, dpr);
 
-    // clear
     ctx.clearRect(0, 0, BOARD_COLS * CELL, BOARD_ROWS * CELL);
 
-    // background grid
-    ctx.fillStyle = "#0f172a"; // background dark
+    ctx.fillStyle = "#0f172a";
     ctx.fillRect(0, 0, BOARD_COLS * CELL, BOARD_ROWS * CELL);
 
-    // subtle grid lines
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
     for (let i = 0; i <= BOARD_COLS; i++) {
       ctx.beginPath();
@@ -270,40 +254,30 @@ export default function SnakePortfolio() {
       ctx.stroke();
     }
 
-    // draw projects
-    const nodes = projectNodesRef.current;
-    nodes.forEach((n) => {
+    projectNodesRef.current.forEach((n) => {
       const px = n.x * CELL,
         py = n.y * CELL;
-      // tile
       ctx.fillStyle = "#0ea5a4";
       ctx.fillRect(px + 2, py + 2, CELL - 4, CELL - 4);
-      // short text (initial)
       ctx.fillStyle = "#001219";
       ctx.font = "10px sans-serif";
-      const label = n.project.title.slice(0, 10);
-      ctx.fillText(label, px + 4, py + CELL / 2 + 3);
+      ctx.fillText(n.project.title.slice(0, 10), px + 4, py + CELL / 2 + 3);
     });
 
-    // draw red squares
-    const reds = redNodesRef.current;
-    reds.forEach((r) => {
+    redNodesRef.current.forEach((r) => {
       const px = r.x * CELL,
         py = r.y * CELL;
-      ctx.fillStyle = "#ef4444"; // Tailwind red-500
+      ctx.fillStyle = "#ef4444";
       ctx.fillRect(px + 2, py + 2, CELL - 4, CELL - 4);
     });
 
-    // draw snake
     const snake = snakeRef.current;
     for (let i = 0; i < snake.length; i++) {
       const s = snake[i];
       const x = s.x * CELL,
         y = s.y * CELL;
-      // gradient color and body/tail
       ctx.fillStyle = i === 0 ? "#60a5fa" : "#2563eb";
       ctx.fillRect(x + 3, y + 3, CELL - 6, CELL - 6);
-      // eye for head
       if (i === 0) {
         ctx.fillStyle = "#001219";
         ctx.fillRect(x + (dirRef.current.x === -1 ? 5 : CELL - 9), y + 7, 3, 3);
@@ -311,10 +285,9 @@ export default function SnakePortfolio() {
     }
   }
 
-  // initial render when component mounts
   useEffect(() => {
     renderBoard();
-  }, []); // eslint-disable-line
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -326,11 +299,17 @@ export default function SnakePortfolio() {
         </div>
       </header>
 
-      <div className="flex gap-6">
+      <div className="flex gap-6 relative">
         <div className="bg-slate-900 p-3 rounded-lg shadow-lg">
-          <canvas ref={canvasRef} className="block" />
+          <canvas
+            ref={canvasRef}
+            className="block touch-none"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          />
           <div className="mt-2 text-xs text-slate-300">
-            Use arrows or WASD to move • Space to pause • R to reset
+            Swipe to move (mobile) • Use arrows/WASD (desktop) • Space to pause
+            • R to reset
           </div>
         </div>
 
@@ -364,7 +343,6 @@ export default function SnakePortfolio() {
         </aside>
       </div>
 
-      {/* modal */}
       {modal && (
         <div className="fixed inset-0 flex items-center justify-center z-40">
           <div
@@ -398,7 +376,6 @@ export default function SnakePortfolio() {
         </div>
       )}
 
-      {/* footer controls */}
       <div className="mt-4 flex gap-2">
         <button
           onClick={() => {
@@ -430,10 +407,9 @@ export default function SnakePortfolio() {
         </button>
       </div>
 
-      {/* small legend */}
       <div className="mt-4 text-xs text-slate-400">
-        Made with ❤️ • You can style tiles, add sounds, and store high scores in
-        localStorage.
+        Made with ❤️ • Swipe on mobile or use keyboard arrows. You can style
+        tiles, add sounds, and store high scores in localStorage.
       </div>
     </div>
   );
