@@ -4,6 +4,8 @@ A fun interactive **Snake Game** built with **React + Tailwind CSS**, where your
 When the snake touches a project tile (green square), a popup opens showing the project details and link.
 Red squares are penalties — they reduce your score, and if it hits zero, the game resets!
 
+[Snake Portfolio Github Page](https://amirtaslimi.github.io/snake-portfolio/)
+
 ---
 
 ## 🚀 Features
